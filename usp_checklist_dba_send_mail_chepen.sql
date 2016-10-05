@@ -1,16 +1,130 @@
-CREATE PROCEDURE usp_checklist_dba_send_mail
+USE [master]
+GO
+
+/****** Object:  StoredProcedure [dbo].[usp_checklist_dba_send_mail]    Script Date: 05/10/2016 04:36:40 p.m. ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE PROCEDURE [dbo].[usp_checklist_dba_send_mail]
 AS
-/*
-Creado por: Victor Arrunategui
-Fecha: 18 Mayo 2016
-Motivo: Realizar el cheklist de forma automatica sobre la instancia y enviarlo por correo.
-*/
 DECLARE @Fecha varchar(10)
 SET @Fecha=RIGHT('00'+CONVERT(VARCHAR(2),DAY(GETDATE())),2)+'-'+RIGHT('00'+CONVERT(VARCHAR(2),MONTH(GETDATE())),2)+'-'+CONVERT(VARCHAR(4),YEAR(GETDATE()))
 DECLARE @BODY VARCHAR (MAX)
-SET @BODY='Checklist de la instancia '+@@SERVERNAME+', fecha: '+@Fecha+':'+N'<br></br>'+
-'A continuación el estado de los servicios: '
 
+SET @BODY='GYM - Checklist SQL Server de la instancia '+@@SERVERNAME+' fecha: '+@Fecha+':'+N'<br></br>'
+
+set @BODY=@BODY+		
+
+                   N'<html><head><style>      
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
+					</style></head>'+
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
+					N'<table cellpadding=0 cellspacing=0 border=0>' +        
+					N'<tr bgcolor=#F7FE2E > <th>Version</th>' +    
+					N'</tr>'+       
+					CAST ((select td= @@VERSION,''
+					FOR XML PATH('tr'), TYPE         
+					) AS NVARCHAR(MAX) ) +        
+					N'</table></html>'
+
+SET @BODY=@BODY+N'<br></br>'+'Configuración de tarjeta ethernet '
+
+declare @ipconfig table(
+resultado varchar(1000))
+insert 	@ipconfig (resultado) 
+EXEC xp_cmdshell 'ipconfig'
+
+set @BODY=@BODY+		
+
+                   N'<html><head><style>      
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
+					</style></head>'+
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
+					N'<table cellpadding=0 cellspacing=0 border=0>' +        
+					N'<tr bgcolor=#F7FE2E > <th>Ipconfig</th>' +    
+					N'</tr>'+       
+					CAST ((select td= resultado,''
+					from @ipconfig where resultado is not null   
+					FOR XML PATH('tr'), TYPE         
+					) AS NVARCHAR(MAX) ) +        
+					N'</table></html>'
+
+SET @BODY=@BODY+N'<br></br>'+'Conexiones Entrantes y Salientes:'
+
+declare @netstat table(
+resultado varchar(1000))
+insert 	@netstat (resultado) 
+EXEC xp_cmdshell 'netstat -a'
+
+set @BODY=@BODY+		
+
+                   N'<html><head><style>      
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
+					</style></head>'+
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
+					N'<table cellpadding=0 cellspacing=0 border=0>' +        
+					N'<tr bgcolor=#F7FE2E > <th>netstat -a</th>' +    
+					N'</tr>'+       
+					CAST ((select td= resultado,''
+					from @netstat where resultado is not null     
+					FOR XML PATH('tr'), TYPE         
+					) AS NVARCHAR(MAX) ) +        
+					N'</table></html>'	
+
+SET @BODY=@BODY+N'<br></br>'+'Conexión a Sevidor de Aplicaciones:'
+
+declare @magnolia table(
+resultado varchar(1000))
+insert 	@magnolia (resultado) 
+EXEC xp_cmdshell 'ping magnolia.gym.com.pe'
+
+set @BODY=@BODY+		
+
+                   N'<html><head><style>      
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
+					</style></head>'+
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
+					N'<table cellpadding=0 cellspacing=0 border=0>' +        
+					N'<tr bgcolor=#F7FE2E > <th>ping magnolia.gym.com.pe</th>' +    
+					N'</tr>'+       
+					CAST ((select td= resultado,''
+					from @magnolia where resultado is not null     
+					FOR XML PATH('tr'), TYPE         
+					) AS NVARCHAR(MAX) ) +        
+					N'</table></html>'	
+
+SET @BODY=@BODY+N'<br></br>'+'Conexión a Sevidor de Reportes:'
+
+declare @tumbes table(
+resultado varchar(1000))
+insert 	@tumbes (resultado) 
+EXEC xp_cmdshell 'ping tumbes.gym.com.pe'
+
+set @BODY=@BODY+		
+
+                   N'<html><head><style>      
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
+					</style></head>'+
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
+					N'<table cellpadding=0 cellspacing=0 border=0>' +        
+					N'<tr bgcolor=#F7FE2E > <th>ping tumbes.gym.com.pe</th>' +    
+					N'</tr>'+       
+					CAST ((select td= resultado,''
+					from @tumbes where resultado is not null     
+					FOR XML PATH('tr'), TYPE         
+					) AS NVARCHAR(MAX) ) +        
+					N'</table></html>'														
+
+SET @BODY=@BODY+N'<br></br>'+'A continuación el estado de los servicios: '
 SET NOCOUNT ON
 /************************** Estado de los servicios ********************************/
 --SELECT '***** A continuación se da a conocer el cheklist de la instancia '+@@SERVERNAME+', para el día de hoy '+@Fecha+':'
@@ -36,12 +150,12 @@ UPDATE @stat_service SET servic='Servicio SQL Server BROWSER' WHERE servic is nu
 SET @BODY=@BODY+
 				
 					N'<html><head><style>      
-					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}      
-					 th {color:#F7FE2E;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}    
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
 					</style></head>'+
-					N'<H3 style="font-size:11pt;color:#FF0000;font-family:''Segoe UI''">   </H3>' +    
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#5E9FDC > <th>Services</th><th>Status</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>Services</th><th>Status</th>' +    
 					N'</tr>'+       
 					CAST ((select td= servic,'',td=stat,''
 					from @stat_service     
@@ -49,10 +163,11 @@ SET @BODY=@BODY+
 					) AS NVARCHAR(MAX) ) +        
 					N'</table></html>'
 
+
 --SELECT servic as [Services], stat [Status] FROM @stat_service
 
 /************************** Estado de los discos ********************************/
-SET @BODY=@BODY+N'<br></br>'+'A continuación el espacio en los discos'
+SET @BODY=@BODY+N'<br></br>'+'A continuación el espacio en los discos:'
 
 
 --SELECT '***** A continuación esl espacio en los discos'
@@ -76,12 +191,12 @@ Update @table_disk set Free=Free/1024
 SET @BODY=@BODY+
 				
 					N'<html><head><style>      
-					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}      
-					 th {color:#FFFFFF;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}    
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
 					</style></head>'+
-					N'<H3 style="font-size:11pt;color:#FF0000;font-family:''Segoe UI''">   </H3>' +    
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#5E9FDC > <th>Drive</th><th>Size (GB)</th><th>Free (GB)</th><th>Perc Free (GB)</th><th>Comment</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>Drive</th><th>Size (GB)</th><th>Free (GB)</th><th>Perc Free (GB)</th><th>Comment</th>' +    
 					N'</tr>'+       
 					CAST ((
 					
@@ -101,6 +216,7 @@ SET @BODY=@BODY+N'<br></br>'+'A continuación el tamaño de los logfile, datafil
 DECLARE @Size_BDS table(
 name_bd varchar (25),
 name_file varchar (60),
+ruta varchar(max),
 [size (MB)] decimal(10,2))
 
 DECLARE @namebd varchar (60)
@@ -114,11 +230,10 @@ DECLARE TBL_BD CURSOR FOR
 
 		SET @TSQL=(
 		'select '''+@namebd+''' as dbname,
-		CASE WHEN (GROUPING(name) = 1) THEN ''*******''
-									ELSE ISNULL(name, ''UNKNOWN'') END as name,
+		name,filename, 
 		sum(convert(decimal(17,2),convert(decimal(17,2),size)/128))  
 		from '+@namebd+'.dbo.sysfiles
-		group by name with rollup')
+		group by name,filename')
 
 		INSERT INTO @Size_BDS
 		EXEC (@TSQL)
@@ -131,20 +246,54 @@ DEALLOCATE TBL_BD
 
 SET @BODY=@BODY+				
 					N'<html><head><style>      
-					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}      
-					 th {color:#FFFFFF;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}    
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
 					</style></head>'+
-					N'<H3 style="font-size:11pt;color:#FF0000;font-family:''Segoe UI''">   </H3>' +    
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#5E9FDC > <th>name_bd</th><th>name_file</th><th>[size (MB)]</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>name_bd</th><th>name_file</th><th>Ruta</th><th>[size (MB)]</th>' +    
 					N'</tr>'+       
 					CAST ((
 					
-					SELECT	td=name_bd,'',td=name_file ,'',td=[size (MB)],''
+					SELECT	td=name_bd,'',td=name_file ,'',td=ruta ,'',td=[size (MB)],''
 					FROM @Size_BDS
 					FOR XML PATH('tr'), TYPE         
 					) AS NVARCHAR(MAX) ) +        
 					N'</table></html>'
+
+SET @BODY=@BODY+N'<br></br>'+'Ultimos Backups Ejecutados:'
+
+declare @backups table(
+databasename varchar(1000),
+backup_inicio varchar(100),
+backup_fin varchar(100),
+server_name varchar(100),
+login_name varchar(1000),
+dispositivo varchar(1000)
+
+)
+insert 	@backups  
+SELECT top(20)
+    [bs].[database_name],     [bs].[backup_start_date], [bs].[backup_finish_date], [bs].Server_name,[bs].user_name AS [BackupCreator] ,    [bmf].physical_device_name
+FROM msdb..backupset bs  
+INNER JOIN msdb..backupmediafamily bmf ON [bs].[media_set_id] = [bmf].[media_set_id] 
+ORDER BY [bs].[backup_start_date] DESC
+set @BODY=@BODY+		
+
+                   N'<html><head><style>      
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
+					</style></head>'+
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
+					N'<table cellpadding=0 cellspacing=0 border=0>' +        
+					N'<tr bgcolor=#F7FE2E > <th>database</th><th>backup_inicio</th><th>backup_fin</th><th>server</th><th>login</th><th>dispositivo</th>' +    
+					N'</tr>'+       
+					CAST ((
+					select td= databasename,'',td=backup_inicio,'',td=backup_fin,'',td=server_name,'',td=login_name,'',td=dispositivo,''
+					FROM @backups    
+					FOR XML PATH('tr'), TYPE         
+					) AS NVARCHAR(MAX) ) +        
+					N'</table></html>'					
 
 --SELECT * FROM @Size_BDS
 
@@ -209,12 +358,12 @@ BEGIN
 
 SET @BODY=@BODY+				
 					N'<html><head><style>      
-					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}      
-					 th {color:#FFFFFF;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}    
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
 					</style></head>'+
-					N'<H3 style="font-size:11pt;color:#FF0000;font-family:''Segoe UI''">   </H3>' +    
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#5E9FDC > <th>databasename</th><th>hostname</th><th>nt_domain</th><th>loginame</th><th>program_name</th><th>physical_io</th><th>cpu</th><th>last_batch</th><th>t_sql</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>databasename</th><th>hostname</th><th>nt_domain</th><th>loginame</th><th>program_name</th><th>physical_io</th><th>cpu</th><th>last_batch</th><th>t_sql</th>' +    
 					N'</tr>'+       
 					CAST ((
 					SELECT	td=pr.databasename,'', td=pr.hostname,'',td=pr.nt_domain,'',td=pr.loginame,'',td=pr.program_name,'',td=pr.physical_io,'',td=pr.cpu,'',td=last_batch,'',td=t_sql,''
@@ -248,12 +397,12 @@ IF @cont_ps=0
 	
 	SET @BODY=@BODY+				
 					N'<html><head><style>      
-					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}      
-					 th {color:#FFFFFF;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}    
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
 					</style></head>'+
-					N'<H3 style="font-size:11pt;color:#FF0000;font-family:''Segoe UI''">   </H3>' +    
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#5E9FDC > <th>database_id</th><th>file_id</th><th>page_id</th><th>event_type</th><th>error_count</th><th>last_update_date</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>database_id</th><th>file_id</th><th>page_id</th><th>event_type</th><th>error_count</th><th>last_update_date</th>' +    
 					N'</tr>'+       
 					CAST ((
 					SELECT	td=database_id,'', td=file_id,'',td=page_id,'',td=event_type,'',td=error_count,'',td=last_update_date,''
@@ -286,12 +435,12 @@ from msdb..sysjobhistory sjh
 	ELSE BEGIN
 		SET @BODY=@BODY+				
 					N'<html><head><style>      
-					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}      
-					 th {color:#FFFFFF;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}    
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
 					</style></head>'+
-					N'<H3 style="font-size:11pt;color:#FF0000;font-family:''Segoe UI''">   </H3>' +    
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#5E9FDC > <th>name</th><th>step_name</th><th>run_date</th><th>run_time</th><th>run_duration</th><th>run_status</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>name</th><th>step_name</th><th>run_date</th><th>run_time</th><th>run_duration</th><th>run_status</th>' +    
 					N'</tr>'+       
 					CAST ((
 					select distinct td=sjo.name,'', td=sjh.step_name,'', td=sjh.run_date,'',td=sjh.run_time,'',td=sjh.run_duration,'', 
@@ -312,7 +461,7 @@ from msdb..sysjobhistory sjh
 	END
 
 /****************************** Revision de alta disponibilidad ****************/
-SET @BODY=@BODY+N'<br></br>'+'**** A continuación el estado alta disponibilidad:'
+SET @BODY=@BODY+N'<br></br>'+'A continuación el estado alta disponibilidad:'
 DECLARE @count1 int
 DECLARE @tbl_stat_repl table (status varchar (15), publisher varchar (50), suscriber varchar (50), publication varchar (100), lastsync datetime, message varchar (max))
 DECLARE @CONTEO INT
@@ -393,12 +542,12 @@ BEGIN
 			
 			SET @BODY=@BODY+				
 					N'<html><head><style>      
-					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}      
-					 th {color:#FFFFFF;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Segoe UI"}    
+					td { border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}      
+					 th {color:black;border: 1px solid black;padding-left:2px;padding-right:2px;padding-top:1px;padding-bottom:1px;font-size:10pt;font-family:"Calibri"}    
 					</style></head>'+
-					N'<H3 style="font-size:11pt;color:#FF0000;font-family:''Segoe UI''">   </H3>' +    
+					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#5E9FDC > <th>status</th><th>publisher</th><th>suscriber</th><th>publication</th><th>lastsync</th><th>message</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>status</th><th>publisher</th><th>suscriber</th><th>publication</th><th>lastsync</th><th>message</th>' +    
 					N'</tr>'+       
 					CAST ((
 					select distinct td=status,'', td=publisher,'', td=suscriber,'',td=publication,'',td=lastsync,'', 
@@ -428,10 +577,13 @@ DECLARE @mailprofile varchar (20)
 SELECT TOP 1 @mailprofile=name FROM MSDB.DBO.sysmail_profile
 
 DECLARE @subject_temp VARCHAR(100)      
-		  SET @subject_temp='GYM - Checklist SQL Server - '+@@SERVERNAME+'-'+@Fecha    
+		  SET @subject_temp='GYM - Checklist SQL Server - '+@@SERVERNAME+'-'+  @Fecha 
 		  EXEC msdb.dbo.sp_send_dbmail     
-				@recipients='mdelgadov@gmd.com.pe', 
+				@recipients='dbagym@gmd.com.pe', 
 				@profile_name=@mailprofile, 
 				@subject = @subject_temp,        
 				@body = @BODY,        
 				@body_format = 'HTML'   
+GO
+
+
