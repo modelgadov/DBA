@@ -69,9 +69,9 @@ set @BODY=@BODY+
 
 SET @BODY=@BODY+N'<br></br>'+'Conexión a Sevidor de Aplicaciones:'
 
-declare @magnolia table(
+declare @mango table(
 resultado varchar(1000))
-insert 	@magnolia (resultado) 
+insert 	@mango (resultado) 
 EXEC xp_cmdshell 'ping mango.gym.com.pe'
 
 set @BODY=@BODY+		
@@ -82,19 +82,19 @@ set @BODY=@BODY+
 					</style></head>'+
 					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#F7FE2E > <th>ping magnolia.gym.com.pe</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>ping mango.gym.com.pe</th>' +    
 					N'</tr>'+       
 					CAST ((select td= resultado,''
-					from @magnolia where resultado is not null     
+					from @mango where resultado is not null     
 					FOR XML PATH('tr'), TYPE         
 					) AS NVARCHAR(MAX) ) +        
 					N'</table></html>'	
 
 SET @BODY=@BODY+N'<br></br>'+'Conexión a Sevidor de Reportes:'
 
-declare @tumbes table(
+declare @naranjo table(
 resultado varchar(1000))
-insert 	@tumbes (resultado) 
+insert 	@naranjo (resultado) 
 EXEC xp_cmdshell 'ping naranjo.gym.com.pe'
 
 set @BODY=@BODY+		
@@ -105,10 +105,10 @@ set @BODY=@BODY+
 					</style></head>'+
 					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#F7FE2E > <th>ping tumbes.gym.com.pe</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>ping naranjo.gym.com.pe</th>' +    
 					N'</tr>'+       
 					CAST ((select td= resultado,''
-					from @tumbes where resultado is not null     
+					from @naranjo where resultado is not null     
 					FOR XML PATH('tr'), TYPE         
 					) AS NVARCHAR(MAX) ) +        
 					N'</table></html>'														
