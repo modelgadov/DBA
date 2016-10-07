@@ -9,7 +9,7 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 
-alter PROCEDURE [dbo].[usp_checklist_dba_send_mail]
+create PROCEDURE [dbo].[usp_checklist_dba_send_mail]
 AS
 DECLARE @Fecha varchar(10)
 SET @Fecha=RIGHT('00'+CONVERT(VARCHAR(2),DAY(GETDATE())),2)+'-'+RIGHT('00'+CONVERT(VARCHAR(2),MONTH(GETDATE())),2)+'-'+CONVERT(VARCHAR(4),YEAR(GETDATE()))
@@ -80,9 +80,9 @@ set @BODY=@BODY+
 
 SET @BODY=@BODY+N'<br></br>'+'Conexión a Sevidor de Aplicaciones:'
 
-declare @magnolia table(
+declare @ayacucho table(
 resultado varchar(1000))
-insert 	@magnolia (resultado) 
+insert 	@ayacucho (resultado) 
 EXEC xp_cmdshell 'ping ayacucho.gym.com.pe'
 
 set @BODY=@BODY+		
@@ -96,16 +96,16 @@ set @BODY=@BODY+
 					N'<tr bgcolor=#F7FE2E > <th>ping ayacucho.gym.com.pe</th>' +    
 					N'</tr>'+       
 					CAST ((select td= resultado,''
-					from @magnolia where resultado is not null     
+					from @ayacucho where resultado is not null     
 					FOR XML PATH('tr'), TYPE         
 					) AS NVARCHAR(MAX) ) +        
 					N'</table></html>'	
 
 SET @BODY=@BODY+N'<br></br>'+'Conexión a Sevidor de Reportes:'
 
-declare @tumbes table(
+declare @amazonas table(
 resultado varchar(1000))
-insert 	@tumbes (resultado) 
+insert 	@amazonas (resultado) 
 EXEC xp_cmdshell 'ping amazonas.gym.com.pe'
 
 set @BODY=@BODY+		
@@ -119,7 +119,7 @@ set @BODY=@BODY+
 					N'<tr bgcolor=#F7FE2E > <th>ping amazonas.gym.com.pe</th>' +    
 					N'</tr>'+       
 					CAST ((select td= resultado,''
-					from @tumbes where resultado is not null     
+					from @amazonas where resultado is not null     
 					FOR XML PATH('tr'), TYPE         
 					) AS NVARCHAR(MAX) ) +        
 					N'</table></html>'														
