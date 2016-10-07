@@ -1,4 +1,4 @@
-alter PROCEDURE [dbo].[usp_checklist_dba_send_mail]
+create PROCEDURE [dbo].[usp_checklist_dba_send_mail]
 AS
 DECLARE @Fecha varchar(10)
 SET @Fecha=RIGHT('00'+CONVERT(VARCHAR(2),DAY(GETDATE())),2)+'-'+RIGHT('00'+CONVERT(VARCHAR(2),MONTH(GETDATE())),2)+'-'+CONVERT(VARCHAR(4),YEAR(GETDATE()))
