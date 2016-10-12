@@ -1,12 +1,13 @@
 USE [master]
 GO
 
-/****** Object:  StoredProcedure [dbo].[usp_checklist_dba_send_mail]    Script Date: 10/11/2016 09:54:43 ******/
+/****** Object:  StoredProcedure [dbo].[usp_checklist_dba_send_mail]    Script Date: 10/12/2016 09:20:54 ******/
 SET ANSI_NULLS ON
 GO
 
 SET QUOTED_IDENTIFIER ON
 GO
+
 
 CREATE PROCEDURE [dbo].[usp_checklist_dba_send_mail]
 AS
@@ -103,10 +104,10 @@ set @BODY=@BODY+
 
 SET @BODY=@BODY+N'<br></br>'+'Conexión a Servidor Web:'
 
-declare @gmhsrvm4web table(
+declare @webmeta4 table(
 resultado varchar(1000))
-insert 	@gmhsrvm4web (resultado) 
-EXEC xp_cmdshell 'ping -a 172.24.1.102'
+insert 	@webmeta4 (resultado) 
+EXEC xp_cmdshell 'ping -a webmeta4.gym.com.pe'
 
 set @BODY=@BODY+		
 
@@ -116,10 +117,10 @@ set @BODY=@BODY+
 					</style></head>'+
 					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#F7FE2E > <th>ping gmhsrvm4web.gym.com.pe</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>ping webmeta4.gym.com.pe</th>' +    
 					N'</tr>'+       
 					CAST ((select td= resultado,''
-					from @gmhsrvm4web where resultado is not null     
+					from @webmeta4 where resultado is not null     
 					FOR XML PATH('tr'), TYPE         
 					) AS NVARCHAR(MAX) ) +        
 					N'</table></html>'																			
@@ -585,7 +586,7 @@ DECLARE @subject_temp VARCHAR(100)
 				@body = @BODY,        
 				@body_format = 'HTML'   
 
-GO
 
+GO
 
 
