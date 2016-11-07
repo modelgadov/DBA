@@ -80,10 +80,10 @@ set @BODY=@BODY+
 
 SET @BODY=@BODY+N'<br></br>'+'Conexión a Sevidor de Aplicaciones:'
 
-declare @magnolia table(
+declare @chiclayo table(
 resultado varchar(1000))
-insert 	@magnolia (resultado) 
-EXEC xp_cmdshell 'ping magnolia.gym.com.pe'
+insert 	@chiclayo (resultado) 
+EXEC xp_cmdshell 'ping chiclayo.gym.com.pe'
 
 set @BODY=@BODY+		
 
@@ -93,10 +93,10 @@ set @BODY=@BODY+
 					</style></head>'+
 					N'<H3 style="font-size:11pt;color:black;font-family:''Calibri''">   </H3>' +    
 					N'<table cellpadding=0 cellspacing=0 border=0>' +        
-					N'<tr bgcolor=#F7FE2E > <th>ping magnolia.gym.com.pe</th>' +    
+					N'<tr bgcolor=#F7FE2E > <th>ping chiclayo.gym.com.pe</th>' +    
 					N'</tr>'+       
 					CAST ((select td= resultado,''
-					from @magnolia where resultado is not null     
+					from @chiclayo where resultado is not null     
 					FOR XML PATH('tr'), TYPE         
 					) AS NVARCHAR(MAX) ) +        
 					N'</table></html>'	
@@ -585,5 +585,3 @@ DECLARE @subject_temp VARCHAR(100)
 				@body = @BODY,        
 				@body_format = 'HTML'   
 GO
-
-
