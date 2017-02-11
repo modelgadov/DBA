@@ -68,3 +68,5 @@ select * from sys.dm_os_sys_info
 SELECT *
 FROM sys.traces 
 WHERE id = 1
+
+dbcc memorystatus
