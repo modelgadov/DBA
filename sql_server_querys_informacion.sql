@@ -67,3 +67,16 @@ SELECT [Current LSN],
   [SPID],
   [Begin Time]
 FROM fn_dblog(null,null) where Operation in ('LOP_UPDATE_ROWS')
+
+------ Database Mail -------
+SELECT items.subject,
+    items.last_mod_date
+    ,l.description FROM dbo.sysmail_allitems  as items
+INNER JOIN dbo.sysmail_event_log AS l
+    ON items.mailitem_id = l.mailitem_id
+    
+EXEC msdb.dbo.sysmail_help_configure_sp;
+EXEC msdb.dbo.sysmail_help_account_sp;
+EXEC msdb.dbo.sysmail_help_profile_sp;
+EXEC msdb.dbo.sysmail_help_profileaccount_sp;
+EXEC msdb.dbo.sysmail_help_principalprofile_sp;
