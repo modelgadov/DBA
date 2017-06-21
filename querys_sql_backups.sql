@@ -70,3 +70,15 @@ FROM sys.traces
 WHERE id = 1
 
 dbcc memorystatus
+
+
+ -----suma de todos los obejtos de la BD
+
+SELECT sys.objects.name,
+       SUM(reserved_page_count) * 8.0 / 1024/1024 as GB
+FROM   sys.dm_db_partition_stats, 
+       sys.objects 
+WHERE  sys.dm_db_partition_stats.object_id = sys.objects.object_id and sys.objects.type='U'
+GROUP  BY sys.objects.name,sys.objects.type
+
+GO 
