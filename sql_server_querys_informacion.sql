@@ -196,4 +196,14 @@ ON e.category_id = cat.category_id
 where CONVERT(VARCHAR(10),StartTime,110) >= '06-09-2017' and CONVERT(VARCHAR(10),StartTime,110) <= '06-12-2017'
 
 
+------Elimar usuarios owner a nivel de BD SQL server----
+use <BD>
+GO
+
+SELECT 'ALTER AUTHORIZATION ON SCHEMA::'+name+' to dbo' FROM  sys.schemas WHERE principal_id = USER_ID('UserPdRGAGyM') 
+
+
+DROP USER UserPdRGAGyM
+
+
 
