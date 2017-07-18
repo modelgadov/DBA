@@ -1,0 +1,83 @@
+To see all the audits captured for the HR user, type
+
+SELECT EVENT_TIMESTAMP, CLIENT_PROGRAM_NAME, ACTION_NAME,
+UNIFIED_AUDIT_POLICIES
+FROM UNIFIED_AUDIT_TRAIL
+WHERE DBUSERNAME = 'HR'
+ORDER BY EVENT_TIMESTAMP DESC;
+
+You might see something like this:
+
+EVENT_TIMESTAMP       CLIENT_PROG ACTION_NAME   UNIFIED_AUDIT_POLICY
+---------------------------- ----------- --------------- --------------------
+29-JUN-13 04.11.08.472263 PM sqlplus.exe CREATE TABLE  TABLE_POLICY
+29-JUN-13 04.10.23.333411 PM sqlplus.exe LOGON      ORA_SECURECONFIG
+29-JUN-13 04.06.03.025363 PM sqlplus.exe LOGOFF     ORA_SECURECONFIG
+
+ SELECT POLICY_NAME, AUDIT_OPTION, AUDIT_OPTION_TYPE
+FROM AUDIT_UNIFIED_POLICIES
+where policy_name = 'ORA_SECURECONFIG'
+order by policy_name, AUDIT_OPTION;
+
+ SELECT *
+FROM AUDIT_UNIFIED_ENABLED_POLICIES;
+
+------------Audit all session connecting to the database:
+
+audit create session [ whenever successful | whenever not successful ];
+
+To audit sessions created by a specific user:
+audit create session by SCOTT [ whenever successful | not successful ];
+
+If you omit the condition "whenever successful/not successful", Oracle will audit all connections, regardless of their success or failure.
+
+
+To disable auditing: 
+noaudit create session;
+noaudit create session by scott;
+
+To verify that the auditing options has indeed been set:
+SELECT * 
+ FROM DBA_PRIV_AUDIT_OPTS 
+ WHERE USER_NAME = 'SCOTT';
+
+------auditoria en oracle 12c
+select * from SYS.UNIFIED_AUDIT_TRAIL where sql_text like 'SELECT%'
+
+select policy_name, audit_option, object_name, object_type
+from   AUDIT_UNIFIED_POLICIES where audit_option like '%SELECT%'
+
+SELECT * FROM (select OS_USERNAME, USERNAME, USERHOST, TIMESTAMP, OS_PROCESS,RETURNCODE,ACTION_NAME from 
+dba_audit_session  WHERE  RETURNCODE in (1017,28000)  AND USERNAME =upper('&vUsername') ORDER BY TIMESTAMP DESC )  WHERE  ROWNUM <= 20
+
+SELECT EVENT_TIMESTAMP, CLIENT_PROGRAM_NAME, ACTION_NAME,
+UNIFIED_AUDIT_POLICIES
+FROM UNIFIED_AUDIT_TRAIL
+WHERE DBUSERNAME = 'SYS' and ACTION_NAME=
+ORDER BY EVENT_TIMESTAMP DESC
+
+select * from SYS.AUD$
+
+
+
+SELECT
+  TO_CHAR(TIMESTAMP,'MM/DD HH24:MI') TIMESTAMP,
+  SUBSTR(OS_USERNAME,1,20) OS_USERNAME,
+  SUBSTR(USERNAME,1,20) USERNAME,
+  SUBSTR(TERMINAL,1,20) TERMINAL,
+  ACTION_NAME,
+  RETURNCODE
+FROM
+  SYS.DBA_AUDIT_SESSION
+WHERE
+  
+  TIMESTAMP BETWEEN SYSDATE-1 AND SYSDATE
+ORDER BY
+  TIMESTAMP DESC;
+  
+  select * from DBA_PRIV_AUDIT_OPTS
+  
+  Select os_username, username,userhost,terminal,timestamp,action_name,logoff_time,RETURNCODE
+from DBA_AUDIT_SESSION where RETURNCODE in (1017,28000) order by timestamp
+
+select * FROM  DBA_AUDIT_SESSION order by timestamp desc where username='SYSTEM'
