@@ -1,0 +1,1 @@
+select 'alter system kill session '||''''||sid||','||serial#||''''||' immediate;' from v$session where schemaname='DLXWMSPRO' and status='INACTIVE' and to_char(logon_time,'dd/mm/yyyy hh24:mi:ss') <= '02/10/2017 10:30:00'
