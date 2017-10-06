@@ -1,0 +1,5 @@
+delete archivelog 2921;
+
+DELETE OBSOLETE;
+
+list archivelog all;
