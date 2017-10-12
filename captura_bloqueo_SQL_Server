@@ -1,0 +1,124 @@
+USE [master]
+GO
+
+/****** Object:  StoredProcedure [dbo].[SP_CAPTURA_BLOQUEO]    Script Date: 12/10/2017 04:14:24 p.m. ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC [dbo].[SP_CAPTURA_BLOQUEO]    
+AS     
+     
+BEGIN    
+
+   SET TRANSACTION ISOLATION LEVEL READ
+   UNCOMMITTED
+   ---— If there are blocked processes…
+
+	IF EXISTS(SELECT 1 FROM sys.sysprocesses WHERE blocked != 0)
+
+BEGIN
+		INSERT INTO GENERA_BLOQUEO  
+				   (    
+		   FechaBloqueo    
+		   ,[Root blocking spids]    
+				   ,[Owner]    
+				   ,[SQL Text]    
+				   ,[cpu]    
+				   ,[physical_io]    
+				   ,[DatabaseName]    
+				   ,[program_name]    
+				   ,[hostname]    
+				   ,[status]    
+				   ,[cmd]    
+				   ,[blocked]    
+				   ,[ecid])    
+		SELECT  distinct     
+			 t1.login_time     
+		   , t1.spid  AS [Root blocking spids]    
+				 , t1.[loginame] AS [Owner]    
+				 , master.dbo.dba_GetSQLForSpid(t1.spid) AS    
+					'SQL Text'    
+				 , t1.[cpu]    
+				 , t1.[physical_io]    
+				 , DatabaseName = DB_NAME(t1.[dbid])    
+				 , t1.[program_name]    
+				 , t1.[hostname]    
+				 , t1.[status]    
+				 , t1.[cmd]    
+				 , t1.[blocked]    
+				 , t1.[ecid]    
+		FROM  sys.sysprocesses t1, sys.sysprocesses t2    
+		WHERE t1.spid = t2.blocked    
+				AND t1.ecid = t2.ecid    
+				AND t1.blocked = 0    
+		ORDER BY t1.spid, t1.ecid    
+END 
+	ELSE
+	     TRUNCATE TABLE [dbo].[GENERA_BLOQUEO]
+END
+
+BEGIN	 
+    
+	IF EXISTS(SELECT 1 FROM sys.sysprocesses WHERE blocked != 0)
+
+BEGIN
+			INSERT INTO PROCESOS_BLOQUEADOS  
+					   ([Blocked spid_1]    
+					   ,[inicioBloqueo_1]    
+					   ,[TiempoDeBloqueo_2]    
+					   ,[Blocked By_2]    
+					   ,[Owner]    
+					   ,[SQL Text]    
+					   ,SQLText_GeneraBloqueo    
+					   ,[cpu]    
+					   ,[physical_io]    
+					   ,[DatabaseName]    
+					   ,[program_name]    
+					   ,[hostname]    
+					   ,[status]    
+					   ,[cmd]    
+					   ,[ecid])    
+			SELECT      
+			   t2.spid AS 'Blocked spid_1',    
+			   t1.login_time 'inicioBloqueo_1',    
+			   t2.login_time 'TiempoDeBloqueo_2'    
+					 , t2.blocked AS 'Blocked By_2'    
+					 , t2.[loginame] AS [Owner]    
+					 , master.dbo.dba_GetSQLForSpid(t2.spid) AS    
+						'SQL Text'    
+			   ,master.dbo.dba_GetSQLForSpid(t1.spid) AS    
+						'SQLText_GeneraBloqueo'    
+					 , t2.[cpu]    
+					 , t2.[physical_io]    
+					 , DatabaseName = DB_NAME(t2.[dbid])    
+					 , t2.[program_name]    
+					 , t2.[hostname]    
+					 , t2.[status]    
+					 , t2.[cmd]    
+					 , t2.ecid    
+    
+				  FROM sys.sysprocesses t1, sys.sysprocesses t2    
+				  WHERE t1.spid = t2.blocked    
+					AND t1.ecid = t2.ecid    
+				  ORDER BY t2.blocked, t2.spid, t2.ecid      
+END
+	ELSE
+		TRUNCATE TABLE [dbo].[PROCESOS_BLOQUEADOS]  
+--	BEGIN
+
+----ELSE -- No blocked processes.
+      
+--	  PRINT 'No processes blocked.'
+	   
+--END
+END
+--end
+
+--EXEC [dbo].[SP_CAPTURA_BLOQUEO]  
+
+GO
+
+
