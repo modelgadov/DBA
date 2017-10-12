@@ -1,0 +1,122 @@
+DECLARE @Fecha varchar(10)
+SET @Fecha=RIGHT('00'+CONVERT(VARCHAR(2),DAY(GETDATE())),2)+'-'+RIGHT('00'+CONVERT(VARCHAR(2),MONTH(GETDATE())),2)+'-'+CONVERT(VARCHAR(4),YEAR(GETDATE()))
+
+DECLARE @BODY VARCHAR (MAX)
+SET @BODY='Estimados;
+   Validar Bloqueos Generados en las Base de Datos del servidor - '+@@SERVERNAME+', del día '+@Fecha+':'+N'<br></br>'--+
+
+SET NOCOUNT ON
+
+/************************** Estado de los bloqueos ********************************/
+
+SET @BODY=@BODY+N'<br></br>'+'***** A continuación el estado de bloqueos:'
+
+EXEC dbo.SP_CAPTURA_BLOQUEO 
+
+DECLARE @cont int
+
+SELECT @cont=COUNT(*) from GENERA_BLOQUEO GB
+INNER JOIN PROCESOS_BLOQUEADOS PB ON GB.IdBloqueo=PB.Id_Tabla
+
+IF (@cont)>0 
+BEGIN
+--    SELECT '**** A continuación el estado de Bloqueos'
+SET @BODY=@BODY+ 
+ N'<html>'+ 
+ N'<head> '+
+ N'<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">'+
+ N'<title>Untitled Page</title> '+
+ N'<style type="text/css">'+
+ N'#contenedor-mains'+
+ N'{ margin:20px; width:800px;}'+
+ N'#contenedor-mains div { background:#fff; font-family:Arial; }'+
+ N'#cuentaUsr{ border:1px solid #FF0100; width:350px; }'+
+ N'#Pie{ width:800px; }'+
+ N'p{ font-size: 12p; }'+
+ N'</style>'+
+ N'</head>'+
+ N'<body>'+
+ N'<TABLE WIDTH="2000" BORDER="1" BGCOLOR="#EEEEEE" cellspacing="0" cellpadding="0" ">'+
+ N'<TR ALIGN = "center">'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">SID Bloqueante</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Host Bloqueante</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Usuario Bloqueante</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Base de Datos</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">SID Bloqueado</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Host Bloqueado</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Usuario Bloqueado</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Fecha Bloqueo</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Hora Bloqueo</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Consulta Bloqueante</font></td>'+
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Estado Bloqueante</font></td>'+ 
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Consulta Bloqueada</font></td>'+ 
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Estado Bloqueado</font></td>'+ 
+ N'<TD WIDTH="100" bgcolor="#0080FF" align="center" valign="middle"> ' + '<font face="Arial" size="2" color="#FFFFFF">Consulta DML</font></td>'+   
+ N'</TR>'+
+ 
+ N'<TR>'+ 
+ CAST ( ( SELECT DISTINCT	
+                    [td/@style]='font-family: "Courier New"', 
+                    td = GB.[Root blocking spids], '',
+                    [td/@style]='font-family: "Courier New"',
+                    td = GB.hostname, '',
+                    [td/@style]='font-family: "Courier New"',
+                    td = GB.Owner, '',
+                    [td/@style]='font-family: "Courier New"',
+                    td = GB.DatabaseName, '',
+                    [td/@style]='font-family: "Courier New"',
+					td = PB.[Blocked spid_1], '',
+					[td/@style]='font-family: "Courier New"',
+					td = PB.hostname, '',
+					[td/@style]='font-family: "Courier New"',
+					td = PB.Owner, '',
+					[td/@style]='font-family: "Courier New"',
+					td = Convert(varchar(10), gb.FechaBloqueo, 103), '',
+					[td/@style]='font-family: "Courier New"',
+					td = Convert(varchar(10), PB.TiempoDeBloqueo_2, 108),'',
+					[td/@style]='font-family: "Courier New"',
+					td = GB.[SQL Text], '',
+					[td/@style]='font-family: "Courier New"',
+					td = GB.status, '',
+					[td/@style]='font-family: "Courier New"',
+					td = PB.[SQL Text], '',
+					[td/@style]='font-family: "Courier New"',
+					td = PB.status, '',
+					[td/@style]='font-family: "Courier New"',
+					td = PB.cmd, ''                   
+              FROM master.dbo.GENERA_BLOQUEO GB 
+				   INNER JOIN master.dbo.PROCESOS_BLOQUEADOS PB ON GB.IdBloqueo=PB.Id_Tabla				 	    
+
+              FOR XML PATH('tr'), TYPE 
+    ) AS NVARCHAR(MAX) )
++
+N'</TR>'+
+N'</TABLE>'+ 
+N'</div>'+
+N'</body>'+
+N'</html>'
+
+--======================================================================================================
+                    /**************** Envio de correo ******************/
+--======================================================================================================
+
+SET NOCOUNT OFF
+SET @BODY=@BODY+N'<br></br>'+'Atentamente.'+'<br>'
+SET @BODY=@BODY+N'Equipo de Base de Datos - GMD'
+
+SET @BODY=REPLACE(@BODY, '<td>Alerta!!!', '<td bgcolor="DD5555"><font color=#EEEEEE><b>Alerta!!!</b></font>')
+SET @BODY=REPLACE(@BODY, '<td>Stopped.', '<td bgcolor="DD5555"><font color=#EEEEEE><b>Servicio Caido!!!</b></font>')
+
+DECLARE @mailprofile varchar (20)
+SELECT TOP 1 @mailprofile=name FROM MSDB.DBO.sysmail_profile
+
+DECLARE @subject_temp VARCHAR(100)      
+              SET @subject_temp='***CENCOSUD - Bloqueos de Objetos- '+@@SERVERNAME+'***'    
+              
+                EXEC msdb.dbo.sp_send_dbmail     
+                          @recipients='jcastroa@gmd.com.pe;kzena@gmd.com.pe;cvizcarra@gmd.com.pe;pmorote@gmd.com.pe;wrojasg@gmd.com.pe; fgonzalesi@gmd.com.pe; jmarlo@gmd.com.pe;mdelgadov@gmd.com.pe',  
+                          @profile_name=@mailprofile, 
+                          @subject = @subject_temp,        
+                          @body = @BODY,        
+                          @body_format = 'HTML';
+              END
