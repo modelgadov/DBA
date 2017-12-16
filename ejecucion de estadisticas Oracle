@@ -1,0 +1,4 @@
+select 'exec dbms_stats.gather_table_stats(ownname => '''||owner||''', tabname =>'''||table_name||''',
+estimate_percent => dbms_stats.auto_sample_size,BLOCK_SAMPLE=>TRUE,method_opt => ''FOR ALL COLUMNS SIZE AUTO'', cascade => ''TRUE'',DEGREE=>32);'
+from dba_tables where owner in ('DLXEMSPRO','DLXWMSPRO','DLXWEBPRO','DLXEMWPRO') and LAST_ANALYZED <'16/12/17'
+
