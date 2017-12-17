@@ -1,0 +1,15 @@
+
+SELECT PROTECTION_MODE, PROTECTION_LEVEL FROM gv$database;
+
+ select name,database_role,open_mode from gv$database;
+ 
+select severity,error_code,to_char(timestamp,'DD-MON-YYYY HH24:MI:SS') "timestamp" , message from v$dataguard_status
+
+alter session set nls_date_format='dd/mm/yyyy hh24:mi:ss';
+SELECT sequence#, first_time, next_time, applied, thread# FROM v$archived_log ORDER BY first_time;
+SELECT PROTECTION_MODE, PROTECTION_LEVEL FROM V$DATABASE;
+
+
+select process, client_process, sequence#, status from v$managed_standby;
+
+select thread#, max (sequence#) from v$archived_log where APPLIED='YES' group by thread#;
