@@ -1,0 +1,31 @@
+USE [master]
+GO
+
+/****** Object:  StoredProcedure [dbo].[failover]    Script Date: 02/13/2018 12:42:27 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE  procedure [dbo].[failover]
+
+as
+DECLARE @result table (resultado varchar(1000))
+DECLARE @result2 table (resultado int)
+insert @result EXEC xp_cmdshell 'ping -n 60 192.168.57.17'
+insert @result2 select case when resultado like '%Request timed out%' then
+ 1 when resultado like '%Destination host unreachable%' 
+then 1 else 0 end from @result
+  if ((select count(resultado) from @result2 where resultado=1)> 10 )
+  BEGIN
+EXEC xp_cmdshell 'netsh interface ipv4 set address name="Local Area Connection 2" 
+source=static address=192.168.57.19 mask=255.255.255.0 gateway=192.168.57.1';
+
+EXEC xp_cmdshell 'netsh dnsclient add dnsserver "Local Area Connection 2" 192.168.130.101 1';
+
+UPDATE MSDB.dbo.sysjobs SET Enabled = 0 WHERE [Name]='failover_mirror';
+END
+GO
+
+
