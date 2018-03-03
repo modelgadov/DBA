@@ -1,0 +1,28 @@
+---------------backup de tabla mysql-----------------------
+
+mysqldump -u root -p prueba t1 > backuptabla.sql
+
+
+---------------restore de tabla mysql-----------------------
+
+ mysql -u root -p prueba < backuptabla.sql
+
+
+
+------------------particionar tablas en mysql en cuyo tipo de dato sea date y datetime.-------------------
+
+
+ALTER TABLE t1 PARTITION BY RANGE columns(year_col) (
+PARTITION AD_Ene16 VALUES LESS THAN ('2016-01-01 00:00:00'),
+PARTITION AD_Feb16 VALUES LESS THAN ('2016-02-01 00:00:00'),
+PARTITION AD_Mar16 VALUES LESS THAN ('2016-03-01 00:00:00'),
+PARTITION AD_Apr16 VALUES LESS THAN ('2016-04-01 00:00:00'),
+PARTITION AD_May16 VALUES LESS THAN ('2016-05-01 00:00:00'),
+PARTITION AD_Jun16 VALUES LESS THAN ('2016-06-01 00:00:00'),
+PARTITION AD_Jul16 VALUES LESS THAN ('2016-07-01 00:00:00'),
+PARTITION AD_Ago16 VALUES LESS THAN ('2016-08-01 00:00:00'),
+PARTITION AD_Sep16 VALUES LESS THAN ('2016-09-01 00:00:00'),
+PARTITION AD_Oct16 VALUES LESS THAN ('2016-10-01 00:00:00'),
+PARTITION AD_Nov16 VALUES LESS THAN ('2016-11-01 00:00:00'),
+PARTITION AD_Dec16 VALUES LESS THAN ('2016-12-01 00:00:00'),
+PARTITION AD_Actual VALUES LESS THAN (MAXVALUE));
