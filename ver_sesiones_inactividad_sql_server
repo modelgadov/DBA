@@ -1,0 +1,50 @@
+USE [msdb]
+GO
+
+/****** Object:  StoredProcedure [dbo].[kill_session]    Script Date: 11/23/2018 9:31:50 AM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+create procedure [dbo].[kill_session] 
+as
+declare
+    @spid int
+,   @stmt_start int
+,   @stmt_end int
+,   @sql_handle binary(20)
+,   @segundos int
+select @segundos=1
+
+Select  getdate() as fecha ,'kill ' + CONVERT(varchar,Spid, 101),
+       Spid,
+       last_batch,
+       right (convert (varchar ,dateadd (ms, datediff(ms, s.last_batch, getdate()), '1900-01-01' ),121), 12) as 'batch_duration' ,
+       Estado=Convert(varchar(10),s.status),
+       'User'=convert (varchar (20),l.name),
+       Login=convert(varchar(20),s.loginame),
+       s.physical_io,
+       s.cpu,
+       Maquina=convert(varchar(15),s.hostname),
+       App=convert(varchar(20),s.Program_Name),
+       blk=convert(varchar(4),s.blocked),
+       BD=convert(varchar(15), db_name(s.dbid)),
+       Comando=convert(varchar(15),s.cmd),
+       q2=(SELECT    SUBSTRING( text, COALESCE (NULLIF (stmt_start/2, 0), 1),CASE stmt_end WHEN -1 THEN DATALENGTH (text ) ELSE (stmt_end - stmt_start)  END ) FROM ::fn_get_sql(sql_handle)),
+      
+       Query = CAST(TEXT AS VARCHAR( max))
+      
+       from
+  master..sysprocesses s INNER JOIN MASTER.dbo.syslogins l
+         ON s.sid = l.sid CROSS APPLY sys.dm_exec_sql_text(sql_handle)
+
+where  s.spid > 50
+and s.cmd <>'AWAITING COMMAND'
+and datediff(s, s.last_batch, getdate())> @segundos
+order by batch_duration desc
+
+GO
+
+
