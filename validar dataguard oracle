@@ -1,4 +1,4 @@
-
+####################### Validar Stand by #########################################
 SELECT PROTECTION_MODE, PROTECTION_LEVEL FROM gv$database;
 
  select name,database_role,open_mode from gv$database;
@@ -13,3 +13,39 @@ SELECT PROTECTION_MODE, PROTECTION_LEVEL FROM V$DATABASE;
 select process, client_process, sequence#, status from v$managed_standby;
 
 select thread#, max (sequence#) from v$archived_log where APPLIED='YES' group by thread#;
+
+######################  Activar stand by MRP  ##########################################
+
+
+--- modo solo lectura o tambien se puede omitir si el cliente no lo usa-----
+ALTER DATABASE OPEN READ ONLY;
+
+SELECT RECOVERY_MODE FROM V$ARCHIVE_DEST_STATUS;
+
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
+
+-- real time apply
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE USING CURRENT LOGFILE DISCONNECT;
+
+-- 60 minutes delay
+SQL> ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DELAY 60 DISCONNECT;
+
+-- no time delay
+SQL> ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT;
+
+
+######################  Desactivar stand by MRP  ##########################################
+
+
+alter database recover managed standby database cancel;
+
+shutdown immediate;
+
+------en primary 
+
+desactivar log_archives_dest
+
+
+
+
+
