@@ -52,7 +52,7 @@ where
 USE [msdb]
 GO 
 SELECT 
-    [bs].[database_name], 
+    [bs].[database_name], [bs].type,
     [bs].[backup_start_date], 
     [bs].[backup_finish_date], 
     [bs].Server_name,
